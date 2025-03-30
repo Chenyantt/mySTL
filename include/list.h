@@ -83,11 +83,10 @@ class List{
     using reference = T&;
     using size_type = size_t;
 
-
     private:
     ListHeader<T> head;
 
-    static Node* create_new_node(const T& data){
+    static Node* create_new_node(const value_type& data){
         Node* node = ALLOC::allocate(1);
         node->data_ = data;
         return node;
@@ -116,7 +115,7 @@ class List{
         return head.size_ == 0;
     }
 
-    iterator insert(const iterator pos, const T& value ){
+    iterator insert(const iterator pos, const value_type& value ){
         Node* node = create_new_node(value);
         node->next_ = pos.node_;
         node->prev_ = pos.node_->prev_;
@@ -126,7 +125,7 @@ class List{
         return iterator(node);
     }
 
-    iterator insert(const iterator pos, size_type count, const T& value ){
+    iterator insert(const iterator pos, size_type count, const value_type& value ){
         iterator it = pos;
         for(size_t i = 0; i < count; i++){
             it = insert(it, value);

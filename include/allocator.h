@@ -7,7 +7,8 @@
 template <typename T>
 class NewAllotor{
     public:
-        static T* allocate(size_t bytes_nr, void* = static_cast<void*>(nullptr)){
+        static T* allocate(size_t obj_nr, void* = static_cast<void*>(nullptr)){
+            size_t bytes_nr = obj_nr * sizeof(T);
             return static_cast<T*>(::operator new(bytes_nr));
         }
         static void deallocate(T* p, size_t){ 
@@ -24,23 +25,23 @@ class PoolAllocatorBase{
         enum{MAX_CHUNK_SIZE = 128};
         enum{POOL_ARRAY_SIZE = MAX_CHUNK_SIZE / POOL_ALIGN};
     private:
-        char* start_free_;
-        char* end_free_;
-        size_t heap_size_;
-        chunk_node* pool_array_[POOL_ARRAY_SIZE];
+        static char* start_free_;
+        static char* end_free_;
+        static size_t heap_size_;
+        static chunk_node* volatile pool_array_[POOL_ARRAY_SIZE];
     private:
-        size_t round_up(size_t obj_size){
+        static size_t round_up(size_t obj_size){
             return (obj_size + POOL_ALIGN - 1) & (~(POOL_ALIGN - 1));
         }
-        void* allocate_chunk(int& obj_nr, size_t obj_size){
+        static void* allocate_chunk(int& obj_nr, size_t obj_size){
             size_t alloc_size = obj_nr * obj_size;
             void* result = nullptr;
-            if(end_free_ - start_free_
+            if(static_cast<size_t>(end_free_ - start_free_)
                  >= alloc_size){
                 result = start_free_;
                 start_free_ = start_free_ + alloc_size;
                 return result;
-            }else if(end_free_ - start_free_ >= obj_size){
+            }else if(static_cast<size_t>(end_free_ - start_free_) >= obj_size){
                 obj_nr = (end_free_ - start_free_) / obj_size;
                 result = start_free_;
                 start_free_ = start_free_ + obj_size * obj_nr;
@@ -74,13 +75,10 @@ class PoolAllocatorBase{
             }
         }
     protected:
-        PoolAllocatorBase():start_free_(0),end_free_(0),heap_size_(0){
-            memset(pool_array_, 0, sizeof pool_array_);
-        }
-        chunk_node** get_free_list(size_t obj_size){
+        static chunk_node* volatile* get_free_list(size_t obj_size){
             return pool_array_+ (round_up(obj_size) / POOL_ALIGN - 1);
         }
-        void* refill(size_t obj_size){
+        static void* refill(size_t obj_size){
             int obj_nr = 20;
             size_t round_obj_size = round_up(obj_size);
             void* p = allocate_chunk(obj_nr, round_obj_size);
@@ -88,21 +86,26 @@ class PoolAllocatorBase{
                 
             }
             int off = round_obj_size / POOL_ALIGN - 1;
-            pool_array_[off] = reinterpret_cast<chunk_node*>((static_cast<char*>(p) + obj_size));
-            char* start = static_cast<char*>(p) + obj_size;
+            pool_array_[off] = reinterpret_cast<chunk_node*>((static_cast<char*>(p) + round_obj_size));
+            char* start = static_cast<char*>(p) + round_obj_size;
             for(int i = 1; i < obj_nr; i++){
                reinterpret_cast<chunk_node*>(start)->next = pool_array_[off];
                pool_array_[off] = reinterpret_cast<chunk_node*>(start);
-               start += obj_size;
+               start += round_obj_size;
             }
             return p;
         }
 };
 
+char* PoolAllocatorBase::start_free_ = nullptr;
+char* PoolAllocatorBase::end_free_ = nullptr;
+size_t PoolAllocatorBase::heap_size_ = 0;
+
 template <typename T>
 class PollAllocator:public PoolAllocatorBase{
 public:
-    T* allocate(size_t bytes_nr, void* = static_cast<void*>(nullptr)){
+    static T* allocate(size_t obj_nr, void* = static_cast<void*>(nullptr)){
+        size_t bytes_nr = obj_nr * sizeof(T);
         if(bytes_nr > MAX_CHUNK_SIZE){
             return static_cast<T*>(::operator new(bytes_nr));
         }
@@ -117,7 +120,8 @@ public:
         }
     }
 
-    void deallocate(T* p, size_t bytes_nr){ 
+    static void deallocate(T* p, size_t obj_nr){ 
+        size_t bytes_nr = obj_nr * sizeof(T);
         if(bytes_nr > MAX_CHUNK_SIZE){
             ::operator delete(p);
         }else{

@@ -14,7 +14,6 @@ int main(){
     for(int i=0;i<5;i++){
         l1.insert(l1.end(), i);
     }
-    list<int> l3;
     List<int>::iterator t = l1.begin();
     List<int>::iterator it = l1.insert(l1.begin(), l2.begin(), l2.end());
     l1.insert(it, -999);

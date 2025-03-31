@@ -115,7 +115,7 @@ class List{
         return head.size_ == 0;
     }
 
-    iterator insert(const iterator pos, const value_type& value ){
+    iterator insert(iterator pos, const value_type& value ){
         Node* node = create_new_node(value);
         node->next_ = pos.node_;
         node->prev_ = pos.node_->prev_;
@@ -125,7 +125,7 @@ class List{
         return iterator(node);
     }
 
-    iterator insert(const iterator pos, size_type count, const value_type& value ){
+    iterator insert(iterator pos, size_type count, const value_type& value ){
         iterator it = pos;
         for(size_t i = 0; i < count; i++){
             it = insert(it, value);
@@ -134,7 +134,7 @@ class List{
     }
 
     template< class InputIt >
-    iterator insert( const iterator pos, InputIt first, InputIt last ){
+    iterator insert( iterator pos, InputIt first, InputIt last ){
         if(first == last) return pos;
         iterator it = insert(pos, *(first++));
         for(; first != last; ++first){
@@ -151,11 +151,11 @@ class List{
         return *(--end());
     }
 
-    void push_back(const T& value){
+    void push_back(const value_type& value){
         insert(end(), value);
     }
 
-    void push_front(const T& value){
+    void push_front(const value_type& value){
         insert(begin(), value);
     }
 
@@ -171,7 +171,7 @@ class List{
         }
     }
 
-    void assign( size_type count, const T& value ){
+    void assign( size_type count, const value_type& value ){
         iterator it = begin();
         size_type i = 0;
         for(; i < count && it != end(); ++i, ++it){

@@ -160,6 +160,16 @@ class Vector{
             erase(end() - 1, end());
         }
 
+        void resize( size_type count, const value_type& value ){
+            reserve(count);
+            if(count > size()){
+                insert(end(), count - size(), value);
+            }
+        }
+
+        void resize( size_type count ){
+            resize(count, value_type());
+        }
 
         void show() const{
             for(auto &x : *this){

@@ -13,5 +13,7 @@ int main(){
     vec.show();
     vec.erase(vec.begin()+1, vec.begin()+4);
     vec.show();
+    vec.resize(6);
+    vec.show();
     return 0;
 }

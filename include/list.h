@@ -73,7 +73,7 @@ public:
     ListNodeBase* node_;
 };
 
-template<typename T, typename ALLOC=NewAllotor<ListNode<T>>>
+template<typename T, typename ALLOC=NewAllocator<ListNode<T>>>
 class List{
     public:
     using iterator = ListIterator<T>;

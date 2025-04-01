@@ -5,7 +5,7 @@
 #include <cstring>
 
 template <typename T>
-class NewAllotor{
+class NewAllocator{
     public:
         static T* allocate(size_t obj_nr, void* = static_cast<void*>(nullptr)){
             size_t bytes_nr = obj_nr * sizeof(T);

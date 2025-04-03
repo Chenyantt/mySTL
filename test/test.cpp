@@ -19,5 +19,6 @@ int main() {
     st.show();
     st.push(111);
     st.show();
+    
     return 0;
 }

@@ -3,28 +3,21 @@
 #include "../include/list.h"
 #include "../include/vector.h"
 #include "../include/deque.h"
+#include "../include/queue.h"
+#include "../include/stack.h"
 
 using namespace std;
 
 int main() {
-    Deque<std::string> dq1(7,"abc");
-    dq1.show();
-    Deque<std::string> dq2(std::move(dq1));
-    dq1[0]="hello";
-    dq1[2]="world";
-    dq1.show();
-    dq2.show();
-    dq2.push_back("1");
-    dq2.push_back("2");
-    dq2.push_back("3");
-    dq2.push_back("4");
-    dq2.show();
-    dq2.insert(dq2.begin(), 5, "aaaa");
-    dq2.show();
-    dq2.erase(dq2.begin()+8);
-    dq2.show();
-    dq2.pop_back();
-    dq2.resize(19, "dddd");
-    dq2.show();
+    Stack<int> st;
+    cout<<st.empty()<<endl;
+    st.push(12);
+    st.push(32);
+    st.show();
+    cout<<st.top()<<endl;
+    st.pop();
+    st.show();
+    st.push(111);
+    st.show();
     return 0;
 }

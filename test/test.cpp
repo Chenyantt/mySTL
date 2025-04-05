@@ -19,6 +19,7 @@ int main() {
     map.insert(std::make_pair(3, 3));
     map.insert(std::make_pair(5, 4));
     map.erase(map.upper_bound(4));
+    map[11];
     map.show();
     // RBTree<int, int, _Identity<int>> tree;
     // bool inserted = false;

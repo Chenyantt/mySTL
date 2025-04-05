@@ -48,9 +48,9 @@ class Map{
             return rbtree_.erase(pos);
         }
 
-        size_type count( const Key& key ) const{
+        size_type count( const Key& key ){
             iterator it = rbtree_.find(key);
-            if(it == rbtree_.end()){
+            if(it == end()){
                 return 0;
             }else{
                 return 1;

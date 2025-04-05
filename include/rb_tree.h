@@ -108,6 +108,21 @@ struct RBTreeIterator{
         --(*this);
         return it;
     }
+
+    reference operator*(){
+        return static_cast<RBTreeNode<T>*>(node)->data;
+    }
+
+    pointer operator->(){
+        return &(static_cast<RBTreeNode<T>*>(node)->data);
+    }
+
+    bool operator==(const self& other) const{
+        return node == other.node;
+    }
+    bool operator!=(const self& other) const{
+        return node != other.node;
+    }
 };
 
 template <typename KEY, typename VALUE, typename KEY_OF_VALUE, typename COMPARE = std::less<KEY>, typename ALLOC = NewAllocator<RBTreeNode<VALUE>>>
@@ -245,7 +260,7 @@ class RBTree{
                             rotate_right(bro);
                             bro = parent->right;
                         }
-                        swap(parent->color, bro->color);
+                        std::swap(parent->color, bro->color);
                         bro->right->color = BLACK;
                         rotate_left(parent);
                         break;
@@ -256,7 +271,7 @@ class RBTree{
                             rotate_left(bro);
                             bro = parent->left;
                         }
-                        swap(parent->color, bro->color);
+                        std::swap(parent->color, bro->color);
                         bro->left->color = BLACK;
                         rotate_right(parent);
                         break;
@@ -326,12 +341,39 @@ class RBTree{
             destroy_node(node);
         }
 
+        node_base_ptr copy(node_base_ptr p){
+            if(p == nullptr) return nullptr;
+            node_base_ptr new_node = create_node(nullptr, nullptr, nullptr, static_cast<node*>(p)->data);
+            new_node->color = p->color;
+            new_node->left = copy(p->left);
+            new_node->right = copy(p->right);
+            if(new_node->left) new_node->left->parent = new_node;
+            if(new_node->right) new_node->right->parent = new_node;
+            return new_node;
+        }
+
     public:
         RBTree():node_count_(0){
             header_.parent = nullptr;
             header_.left = &header_;
             header_.right = &header_;
             header_.color = RED;
+        }
+
+        RBTree(const RBTree& other){
+            if(other.root() == nullptr){
+                header_.parent = nullptr;
+                header_.left = &header_;
+                header_.right = &header_;
+                node_count_ = 0;
+            }else{
+                node_base_ptr p = copy(other.root());
+                header_.parent = p;
+                header_.left = leftmost(p);
+                header_.right = rightmost(p);
+                node_count_ = other.node_count_;
+                p->parent = &header_;
+            }
         }
 
         ~RBTree(){
@@ -367,7 +409,7 @@ class RBTree{
             std::swap(node_count_, other.node_count_);
             std::swap(key_compare_, other.key_compare_);
         }
-        
+
 
         iterator lower_bound(const KEY& key){
             node_base_ptr p = root(), lower_bound_p = &header_;
@@ -395,7 +437,21 @@ class RBTree{
             return upper_bound_p;
         }
 
-        iterator insert_unique(const VALUE& value, const KEY& key){
+        iterator find(const KEY& key){
+            node_base_ptr p = root();
+            while(p != nullptr){
+                if(key_compare_(get_key(p), key)){
+                    p = p->right;
+                }else if(key_compare_(key, get_key(p))){
+                    p = p->left;
+                }else{
+                    return p;
+                }
+            }
+            return &header_;
+        }
+
+        iterator insert_unique(const VALUE& value, const KEY& key, bool& inserted){
             node_base_ptr p = root();
             if(p == nullptr){
                 node_ptr new_node = create_node(&header_, nullptr, nullptr, value);
@@ -404,17 +460,20 @@ class RBTree{
                 header_.right = new_node;
                 ++node_count_;
                 adjust(new_node);
+                inserted = true;
                 return new_node;
             }else{
                 node_base_ptr fp = nullptr, lower_bound_p = nullptr;
                 bool is_left = false;
                 find_insert_place(p, fp, is_left, lower_bound_p, key);
                 if(lower_bound_p != nullptr && get_key(lower_bound_p) == key){
+                    inserted = false;
                     return lower_bound_p;
                 }else{
                     node_base_ptr new_node = create_node(fp, nullptr, nullptr, value);
                     insert_node(fp, new_node, is_left);
                     adjust(new_node);
+                    inserted = true;
                     return new_node;
                 }
             }
@@ -441,11 +500,13 @@ class RBTree{
             }
         }
 
-        void erase(iterator it){
+        iterator erase(iterator it){
             node_base_ptr node = it.node;
+            iterator next_it = inc(node);
             if(node->left && node->right){
                 node_base_ptr p = leftmost(node->right);
-                std::swap(get_value(node), get_value(p));
+                std::destroy_at(&get_value(node));
+                new( &get_value(node)) VALUE(get_value(p));
                 node = p;
             }
             if(node->color == RED){
@@ -459,7 +520,8 @@ class RBTree{
             }else{
                 erase_adjust(node);
                 erase_node(node);
-            }     
+            }
+            return next_it; 
         }
 
         void show()const{

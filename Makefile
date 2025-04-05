@@ -1,6 +1,6 @@
 CPPFLAGS := -g
-CFLAGS := -O2 -Wall -g
-CXXFLAGS := -O2 -Wall -g
+CFLAGS := -Wall -g
+CXXFLAGS := -Wall -g
 LDFLAGS := -g
 
 TARGET_EXEC := test.out

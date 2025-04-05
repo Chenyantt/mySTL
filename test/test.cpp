@@ -13,14 +13,23 @@ using namespace std;
 #include "../include/map.h"
 
 int main() {
-    Map<int, int> map;
+    MultiMap<int, int> map;
     map.insert(std::make_pair(6, 5));
     map.insert(std::make_pair(2, 7));
     map.insert(std::make_pair(3, 3));
     map.insert(std::make_pair(5, 4));
     map.erase(map.upper_bound(4));
-    map[11];
+    map.insert(std::make_pair(6, 8));
+    map.insert(std::make_pair(6, 4));
+    map.insert(std::make_pair(6, 3));
+    map.insert(std::make_pair(6, 2));
+    map.insert(std::make_pair(6, 1));
+    map.insert(std::make_pair(3, 1));
+    map.erase(map.upper_bound(5));
+    map.erase(map.upper_bound(5));
+    map.erase(map.upper_bound(5));
     map.show();
+    cout<<map.count(6)<<endl;
     // RBTree<int, int, _Identity<int>> tree;
     // bool inserted = false;
     // tree.show();

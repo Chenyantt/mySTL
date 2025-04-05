@@ -69,6 +69,7 @@ class Map{
 
         void show() {
             iterator it = begin();
+            std::cout << "Map Size: " << size() << std::endl;
             while(it != end()){
                 std::cout << it->first << ": " << it->second << std::endl;
                 ++it;
@@ -76,6 +77,69 @@ class Map{
         }
 };
 
+
+template <typename Key, typename T, typename Compare = std::less<Key>, typename Allocator = NewAllocator<RBTreeNode<std::pair<const Key, T>>>>
+class MultiMap{
+    typedef Key key_type;
+    typedef T mapped_type;
+    typedef std::pair<const key_type, mapped_type> value_type;
+    typedef typename RBTree<const key_type, value_type, std::_Select1st<value_type>, Compare, Allocator>::iterator iterator;
+    typedef size_t size_type;
+
+
+    private:
+        RBTree<const key_type, value_type, std::_Select1st<value_type>, Compare, Allocator> rbtree_;
+    public:
+        MultiMap() = default;
+        MultiMap(const MultiMap& other) = default;
+
+        iterator begin(){ return rbtree_.begin();}
+
+        iterator end(){ return rbtree_.end();}
+
+        bool empty() const{ return rbtree_.empty();}
+        size_type size() const{ return rbtree_.size();}
+
+        void clear(){ rbtree_.clear();}
+        void swap(MultiMap& other){ rbtree_.swap(other.rbtree_);}
+
+        iterator insert( const value_type& value ){
+            return rbtree_.insert_equal(value, value.first);
+        }
+
+        iterator erase( iterator pos ){
+            return rbtree_.erase(pos);
+        }
+
+        size_type count( const Key& key ){
+            iterator it = lower_bound(key);
+            size_type ret = 0;
+            while(it != end() && it->first == key){
+                ++ret;
+                ++it;
+            }
+            return ret;
+        }
+
+        iterator lower_bound( const Key& key ){
+            return rbtree_.lower_bound(key);
+        }
+        iterator upper_bound( const Key& key ){
+            return rbtree_.upper_bound(key);
+        }
+        iterator find( const Key& key ){
+            return rbtree_.find(key);
+        }
+
+        void show() {
+            iterator it = begin();
+            std::cout << "MultiMap Size: " << size() << std::endl;
+            while(it != end()){
+                std::cout << it->first << ": " << it->second << std::endl;
+                ++it;
+            }
+        }
+};
 
 
 
